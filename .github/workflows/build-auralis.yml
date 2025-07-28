@@ -1,0 +1,49 @@
+name: Build Auralis OS
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-auralis:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Free up disk space
+      run: |
+        sudo apt-get clean
+        sudo rm -rf /usr/local/lib/android
+        sudo rm -rf /opt/ghc
+        sudo rm -rf /usr/local/.ghcup
+        df -h
+        
+    - name: Make build script executable
+      run: chmod +x build-auralis.sh
+      
+    - name: Build Auralis OS
+      run: |
+        echo "🚀 Starting Auralis OS build in GitHub Actions..."
+        ./build-auralis.sh
+        
+    - name: Upload Auralis OS ISO
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: auralis-os-iso
+        path: /tmp/auralis-output/
+        retention-days: 30
+        
+    - name: Upload build logs
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: build-logs
+        path: |
+          build.log
+          kernel-build.log
+        retention-days: 7

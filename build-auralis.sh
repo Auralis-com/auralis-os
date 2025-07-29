@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-# Auralis OS Ultimate Build System - GitHub Actions Edition
-# ULTIMATE Gaming Linux Distribution - Cloud Build
-# linux-zen + PREEMPT_RT + 2000 Hz + Zen Browser + Maximum Performance
+# Auralis OS Sequential Build System - GitHub Actions Edition
+# ULTIMATE Gaming Linux Distribution - Smart Resource Management
+# Phase 1: Build Kernel → Phase 2: Cleanup → Phase 3: Build System
 
 # Build configuration
 AURALIS_VERSION="1.0.0-beta"
@@ -15,6 +15,7 @@ WORK_DIR="/tmp/auralis-build"
 ROOT_DIR="$WORK_DIR/rootfs"
 ISO_DIR="$WORK_DIR/iso"
 KERNEL_DIR="$WORK_DIR/kernel-build"
+KERNEL_SAVE_DIR="/tmp/auralis-kernel-artifacts"
 OUTPUT_DIR="/tmp/auralis-output"
 VOID_MIRROR="https://repo-default.voidlinux.org"
 ARCH="x86_64"
@@ -29,7 +30,7 @@ CYAN='\033[0;36m'
 NC='\033[0m'
 
 log() {
-    echo -e "${GREEN}[AURALIS-ULTIMATE]${NC} $1"
+    echo -e "${GREEN}[AURALIS-SEQUENTIAL]${NC} $1"
 }
 
 warn() {
@@ -49,6 +50,10 @@ epic() {
     echo -e "${PURPLE}[EPIC]${NC} $1"
 }
 
+phase() {
+    echo -e "${CYAN}[PHASE]${NC} $1"
+}
+
 # Display ultimate banner
 display_banner() {
     echo -e "${PURPLE}"
@@ -60,45 +65,37 @@ display_banner() {
    ██║  ██║╚██████╔╝██║  ██║██║  ██║███████╗██║███████║    ╚██████╔╝███████║
    ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝╚══════╝     ╚═════╝ ╚══════╝
                                                                             
-       🔥 ULTIMATE GAMING LINUX DISTRIBUTION - VACATION EDITION 🔥
+       🔥 ULTIMATE GAMING LINUX - SEQUENTIAL BUILD EDITION 🔥
        ⚡ linux-zen + PREEMPT_RT + 2000 Hz + Zen Browser ⚡
-       🎮 Version: 1.0.0-beta "Borealis" (Ultimate GitHub Build) 🎮
-       🌌 The Most Responsive Gaming Linux Ever Created! 🌌
+       🎮 Version: 1.0.0-beta "Borealis" (Smart Resource Management) 🎮
+       🧠 Sequential Build: Kernel → Cleanup → System → Success! 🧠
 EOF
     echo -e "${NC}"
     echo ""
-    epic "Building the ULTIMATE Auralis OS Gaming Edition v$AURALIS_VERSION..."
-    epic "🏖️  Taking time for perfection - vacation build mode activated!"
-    epic "🚀 Features: linux-zen + RT patches + 2000 Hz + Zen Browser + zram + earlyoom"
+    epic "Building Auralis OS with intelligent resource management..."
+    epic "🎯 3-Phase Sequential Build: Maximum performance, smart resource usage"
+    epic "🏖️ Vacation-quality build - patience rewarded with perfection!"
     echo ""
 }
 
-# Free up maximum space for this epic build
-free_disk_space() {
-    log "🧹 Freeing up disk space for epic build..."
-    
-    # Remove unnecessary packages and cached data
-    sudo apt-get clean
-    sudo apt-get autoremove -y
-    
-    # Clear package caches
-    sudo apt-get clean
-    docker system prune -af 2>/dev/null || true
-    
-    info "📊 Available disk space after cleanup:"
-    df -h / | tail -1
-    
-    log "✅ Disk space optimized for ultimate build"
+# Show current system resources
+show_resources() {
+    local phase_name="$1"
+    info "📊 $phase_name Resources:"
+    info "  💻 CPU Cores: $(nproc)"
+    info "  🧠 RAM: $(free -h | grep '^Mem:' | awk '{print $7}') free / $(free -h | grep '^Mem:' | awk '{print $2}') total"
+    info "  💾 Disk: $(df -h /tmp | tail -1 | awk '{print $4}') available"
+    info "  📈 Load: $(uptime | awk -F'load average:' '{print $2}')"
 }
 
-# Install comprehensive build dependencies 
-install_ultimate_dependencies() {
-    log "🚀 Installing ultimate build dependencies for linux-zen + PREEMPT_RT..."
+# Install build dependencies 
+install_build_dependencies() {
+    log "🚀 Installing build dependencies for sequential build..."
     
     # Update system
     sudo apt-get update
     
-    # Install comprehensive build tools including RT patch dependencies
+    # Install comprehensive build tools
     sudo apt-get install -y \
         build-essential git wget curl tar \
         flex bison bc libssl-dev libelf-dev libncurses-dev \
@@ -110,7 +107,7 @@ install_ultimate_dependencies() {
         quilt patch \
         libaudit-dev \
         libnuma-dev \
-        time
+        time pv
     
     # Install XBPS tools for Void Linux bootstrap
     if ! command -v xbps-install &> /dev/null; then
@@ -128,30 +125,25 @@ install_ultimate_dependencies() {
     mkdir -p "$CCACHE_DIR"
     ccache -M 2G
     
-    log "✅ Ultimate build dependencies installed with ccache acceleration"
+    log "✅ Build dependencies installed with ccache acceleration"
 }
 
-# Setup ultimate build workspace
-setup_ultimate_workspace() {
-    log "🏗️  Setting up ultimate cloud build workspace..."
+# Setup workspace
+setup_workspace() {
+    log "🏗️ Setting up sequential build workspace..."
     
     # Clean and create directories
-    sudo rm -rf "$WORK_DIR" 2>/dev/null || true
-    mkdir -p "$ROOT_DIR" "$ISO_DIR" "$KERNEL_DIR" "$OUTPUT_DIR"
+    sudo rm -rf "$WORK_DIR" "$KERNEL_SAVE_DIR" 2>/dev/null || true
+    mkdir -p "$ROOT_DIR" "$ISO_DIR" "$KERNEL_DIR" "$KERNEL_SAVE_DIR" "$OUTPUT_DIR"
     
-    # Show available resources for this epic build
-    info "🖥️  GitHub Actions Ultimate Build Resources:"
-    info "  💻 CPU Cores: $(nproc)"
-    info "  🧠 RAM: $(free -h | grep '^Mem:' | awk '{print $2}')"
-    info "  💾 Disk Space: $(df -h /tmp | tail -1 | awk '{print $4}') available"
-    info "  🚀 ccache: $(ccache -s | grep 'cache size' || echo 'Ready for caching')"
-    
-    log "✅ Ultimate cloud workspace ready at: $WORK_DIR"
+    show_resources "Initial"
+    log "✅ Sequential build workspace ready"
 }
 
-# Build the ultimate linux-zen + PREEMPT_RT + 2000 Hz kernel
+# PHASE 1: Build the ultimate kernel
 build_ultimate_kernel() {
-    epic "🔥 Building ULTIMATE Auralis Kernel: linux-zen + PREEMPT_RT + 2000 Hz!"
+    phase "🔥 PHASE 1: Building Ultimate Kernel (linux-zen + PREEMPT_RT + 2000 Hz)"
+    show_resources "Phase 1 Start"
     
     cd "$KERNEL_DIR"
     
@@ -168,10 +160,10 @@ build_ultimate_kernel() {
         xz -d "patch-$RT_VERSION.patch.xz"
         
         log "🔧 Applying PREEMPT_RT patches to linux-zen..."
-        # Apply RT patches with some expected rejections (zen has some conflicting patches)
+        # Apply RT patches with some expected rejections
         patch -f -p1 < "patch-$RT_VERSION.patch" || warn "Some RT patches may conflict with zen - this is expected"
         
-        log "⚙️  Creating Ultimate Auralis gaming + RT kernel configuration..."
+        log "⚙️ Creating Ultimate Auralis gaming + RT kernel configuration..."
         make ARCH=x86_64 defconfig
         
         epic "🎮 Applying MAXIMUM gaming + RT optimizations..."
@@ -261,43 +253,94 @@ CONFIG_SLAB=y
 
 KERNEL_CONFIG
 
-        # Build with ultimate GitHub Actions power and ccache acceleration
+        # Build with ccache acceleration and resource monitoring
         KERNEL_JOBS=$(nproc)
-        epic "🔨 Compiling Ultimate Auralis Kernel with ALL $KERNEL_JOBS CPU cores + ccache..."
-        epic "⏱️  Estimated time: 60-90 minutes (linux-zen + RT is WORTH IT!)"
+        epic "🔨 Compiling Ultimate Kernel with $KERNEL_JOBS cores + ccache..."
+        epic "⏱️ Estimated time: 45-75 minutes (Phase 1 of 3)"
         
         export ARCH=x86_64
-        export KBUILD_BUILD_HOST=github-actions-ultimate
-        export KBUILD_BUILD_USER=auralis-vacation
+        export KBUILD_BUILD_HOST=auralis-sequential
+        export KBUILD_BUILD_USER=auralis-phase1
         export CC="ccache gcc"
         export CXX="ccache g++"
         
-        # Monitor resources during build
+        # Start resource monitoring
         (while true; do 
-            echo "🖥️  Build progress: $(date) - Free RAM: $(free -h | grep '^Mem:' | awk '{print $7}') - ccache hits: $(ccache -s | grep 'cache hit rate' || echo 'Building...')"
+            echo "🖥️ Phase 1 Progress: $(date +%H:%M) - Free RAM: $(free -h | grep '^Mem:' | awk '{print $7}') - Load: $(uptime | awk -F'load average:' '{print $2}')"
             sleep 300
         done) &
         MONITOR_PID=$!
         
-        if timeout 5400 make ARCH=x86_64 LOCALVERSION=-auralis-rt -j$KERNEL_JOBS; then
+        # Build kernel with timeout protection
+        if timeout 4500 make ARCH=x86_64 LOCALVERSION=-auralis-rt -j$KERNEL_JOBS; then
             kill $MONITOR_PID 2>/dev/null || true
-            epic "🎉 ULTIMATE Auralis Kernel (linux-zen + RT + 2000 Hz) compilation completed!"
-            epic "🔥 The most responsive gaming kernel ever created is ready!"
+            epic "🎉 Phase 1 COMPLETE! Ultimate kernel compiled successfully!"
+            show_resources "Phase 1 End"
             return 0
         else
             kill $MONITOR_PID 2>/dev/null || true
-            warn "Ultimate kernel compilation failed or timed out, will use standard zen kernel"
+            warn "Phase 1 failed - kernel compilation issue"
             return 1
         fi
     else
-        warn "Failed to download linux-zen source, will use standard kernel"
+        warn "Failed to download linux-zen source"
         return 1
     fi
 }
 
+# PHASE 2: Save kernel artifacts and cleanup
+save_kernel_and_cleanup() {
+    phase "💾 PHASE 2: Saving Kernel Artifacts & Resource Cleanup"
+    show_resources "Phase 2 Start"
+    
+    if [[ -f "$KERNEL_DIR/zen-kernel-$ZEN_VERSION/arch/x86/boot/bzImage" ]]; then
+        log "💾 Saving ultimate kernel artifacts..."
+        cd "$KERNEL_DIR/zen-kernel-$ZEN_VERSION"
+        
+        # Create modules tarball
+        mkdir -p "$KERNEL_SAVE_DIR/modules"
+        make INSTALL_MOD_PATH="$KERNEL_SAVE_DIR/modules" modules_install
+        
+        # Save kernel files
+        cp arch/x86/boot/bzImage "$KERNEL_SAVE_DIR/vmlinuz-$AURALIS_KERNEL_VERSION"
+        cp System.map "$KERNEL_SAVE_DIR/System.map-$AURALIS_KERNEL_VERSION"
+        cp .config "$KERNEL_SAVE_DIR/config-$AURALIS_KERNEL_VERSION"
+        
+        # Create modules archive
+        cd "$KERNEL_SAVE_DIR"
+        tar -czf "modules-$AURALIS_KERNEL_VERSION.tar.gz" modules/
+        rm -rf modules/
+        
+        epic "✅ Ultimate kernel artifacts saved successfully!"
+        KERNEL_AVAILABLE=true
+    else
+        warn "No kernel built, will use standard kernel"
+        KERNEL_AVAILABLE=false
+    fi
+    
+    log "🧹 Aggressive cleanup to free resources for Phase 3..."
+    
+    # Clean up kernel build directory (frees ~3-4GB)
+    rm -rf "$KERNEL_DIR" 2>/dev/null || true
+    
+    # Clean ccache
+    ccache -C 2>/dev/null || true
+    
+    # Clean temporary files
+    sudo apt-get clean
+    rm -rf /tmp/tmp.* /tmp/*.tar.* 2>/dev/null || true
+    
+    # Force garbage collection
+    sync
+    echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null || true
+    
+    show_resources "Phase 2 End (After Cleanup)"
+    epic "🎯 Phase 2 COMPLETE! Resources freed for system build"
+}
+
 # Bootstrap Void Linux base system
 bootstrap_void_linux() {
-    log "🚀 Bootstrapping Void Linux base system for ultimate gaming..."
+    log "🚀 Bootstrapping Void Linux base system..."
     
     cd "$WORK_DIR"
     
@@ -327,7 +370,7 @@ bootstrap_void_linux() {
     # Copy resolv.conf for internet access in chroot
     sudo cp /etc/resolv.conf "$ROOT_DIR/etc/"
     
-    log "✅ Void Linux base system ready for ultimate gaming build"
+    log "✅ Void Linux base system ready"
 }
 
 # Mount filesystems for chroot
@@ -350,26 +393,26 @@ unmount_chroot() {
     sudo umount -l "$ROOT_DIR/dev" 2>/dev/null || true
 }
 
-# Install ultimate kernel
-install_ultimate_kernel() {
-    if [[ -f "$KERNEL_DIR/zen-kernel-$ZEN_VERSION/arch/x86/boot/bzImage" ]]; then
-        epic "⚡ Installing ULTIMATE Auralis Kernel (linux-zen + RT + 2000 Hz)..."
-        cd "$KERNEL_DIR/zen-kernel-$ZEN_VERSION"
-        
-        # Install kernel modules
-        sudo make INSTALL_MOD_PATH="$ROOT_DIR" modules_install
+# Install saved ultimate kernel or fallback
+install_saved_kernel() {
+    if [[ "$KERNEL_AVAILABLE" == "true" && -f "$KERNEL_SAVE_DIR/vmlinuz-$AURALIS_KERNEL_VERSION" ]]; then
+        epic "⚡ Installing saved Ultimate Kernel (linux-zen + RT + 2000 Hz)..."
         
         # Install kernel image
         sudo mkdir -p "$ROOT_DIR/boot"
-        sudo cp arch/x86/boot/bzImage "$ROOT_DIR/boot/vmlinuz-$AURALIS_KERNEL_VERSION"
-        sudo cp System.map "$ROOT_DIR/boot/System.map-$AURALIS_KERNEL_VERSION"
-        sudo cp .config "$ROOT_DIR/boot/config-$AURALIS_KERNEL_VERSION"
+        sudo cp "$KERNEL_SAVE_DIR/vmlinuz-$AURALIS_KERNEL_VERSION" "$ROOT_DIR/boot/"
+        sudo cp "$KERNEL_SAVE_DIR/System.map-$AURALIS_KERNEL_VERSION" "$ROOT_DIR/boot/"
+        sudo cp "$KERNEL_SAVE_DIR/config-$AURALIS_KERNEL_VERSION" "$ROOT_DIR/boot/"
         
-        epic "🎉 ULTIMATE Auralis Gaming Kernel (linux-zen + RT + 2000 Hz) installed!"
+        # Extract and install modules
+        cd "$ROOT_DIR"
+        sudo tar -xzf "$KERNEL_SAVE_DIR/modules-$AURALIS_KERNEL_VERSION.tar.gz"
+        
+        epic "🎉 Ultimate kernel (linux-zen + RT + 2000 Hz) installed!"
         KERNEL_LABEL="Ultimate linux-zen + PREEMPT_RT + 2000 Hz Gaming Kernel"
         CUSTOM_KERNEL=true
     else
-        log "📦 Installing standard Void zen kernel with optimizations..."
+        log "📦 Installing standard Void zen kernel..."
         sudo chroot "$ROOT_DIR" xbps-install -Suy xbps
         sudo chroot "$ROOT_DIR" xbps-install -y linux-zen linux-zen-headers || sudo chroot "$ROOT_DIR" xbps-install -y linux6.6 linux6.6-headers
         KERNEL_LABEL="Standard Zen Gaming Kernel"
@@ -383,9 +426,6 @@ install_ultimate_gaming_packages() {
     
     # Update XBPS first
     sudo chroot "$ROOT_DIR" xbps-install -Suy xbps
-    
-    # Enable Flatpak for Zen Browser
-    sudo chroot "$ROOT_DIR" xbps-install -y flatpak
     
     # Define comprehensive package groups
     local base_packages=(
@@ -429,28 +469,26 @@ install_ultimate_gaming_packages() {
     log "Installing ultimate performance packages (zram + earlyoom)..."
     sudo chroot "$ROOT_DIR" xbps-install -y "${performance_packages[@]}" || warn "Some performance packages failed"
     
-    # Setup Flatpak and install Zen Browser
-    epic "🌟 Installing gorgeous ZEN BROWSER via Flatpak..."
-    sudo chroot "$ROOT_DIR" flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || true
-    
-    # Since Zen Browser might not be on Flathub, we'll download it directly
-    log "📦 Downloading Zen Browser directly..."
+    # Download Zen Browser
+    epic "🌟 Installing gorgeous ZEN BROWSER..."
+    sudo mkdir -p "$ROOT_DIR/opt"
     cd "$ROOT_DIR/opt"
-    sudo wget -q -O zen-browser.tar.bz2 "https://github.com/zen-browser/desktop/releases/latest/download/zen.linux-x86_64.tar.bz2" || warn "Zen Browser download failed, will create launcher anyway"
+    sudo wget -q -O zen-browser.tar.bz2 "https://github.com/zen-browser/desktop/releases/latest/download/zen.linux-x86_64.tar.bz2" || warn "Zen Browser download failed"
     
     if [[ -f zen-browser.tar.bz2 ]]; then
         sudo tar -xf zen-browser.tar.bz2
         sudo rm zen-browser.tar.bz2
         sudo mv zen* zen-browser 2>/dev/null || true
         sudo chmod +x zen-browser/zen* 2>/dev/null || true
+        epic "✅ ZEN BROWSER installed successfully!"
     fi
     
-    log "✅ Ultimate gaming package installation completed with ZEN BROWSER!"
+    log "✅ Ultimate gaming package installation completed!"
 }
 
 # Configure Auralis OS system
 configure_auralis_system() {
-    log "⚙️  Configuring Auralis OS for ultimate gaming + RT performance..."
+    log "⚙️ Configuring Auralis OS for ultimate gaming..."
     
     # Set hostname
     echo "auralis" | sudo tee "$ROOT_DIR/etc/hostname"
@@ -479,14 +517,14 @@ EOF
     sudo chroot "$ROOT_DIR" ln -sf /etc/sv/elogind /etc/runit/runsvdir/default/ || true
     sudo chroot "$ROOT_DIR" ln -sf /etc/sv/earlyoom /etc/runit/runsvdir/default/ || true
     
-    log "✅ Ultimate system configuration completed"
+    log "✅ System configuration completed"
 }
 
-# Configure ultimate gaming + RT optimizations
+# Configure ultimate gaming optimizations
 configure_ultimate_optimizations() {
     epic "🔥 Configuring ULTIMATE gaming + RT optimizations..."
     
-    # Create ultimate gaming + RT sysctl configuration
+    # Create ultimate gaming sysctl configuration
     sudo mkdir -p "$ROOT_DIR/etc/sysctl.d"
     sudo tee "$ROOT_DIR/etc/sysctl.d/99-auralis-ultimate-gaming-rt.conf" << 'EOF'
 # Auralis OS Ultimate Gaming + PREEMPT_RT Performance Configuration
@@ -538,7 +576,7 @@ swap-priority = 100
 fs-type = swap
 EOF
 
-    # Configure earlyoom for gaming + RT responsiveness
+    # Configure earlyoom for gaming responsiveness
     sudo mkdir -p "$ROOT_DIR/etc/default"
     sudo tee "$ROOT_DIR/etc/default/earlyoom" << 'EOF'
 # Auralis OS earlyoom - protect gaming + RT performance
@@ -554,7 +592,6 @@ echo "🔥 Activating Auralis ULTIMATE Gaming + RT Mode..."
 
 # CPU - Maximum performance
 echo performance | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor >/dev/null 2>&1 || true
-echo 1 | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_min_freq >/dev/null 2>&1 || true
 
 # I/O - Gaming optimized scheduler
 echo mq-deadline | tee /sys/block/*/queue/scheduler >/dev/null 2>&1 || true
@@ -576,10 +613,10 @@ EOF
 
     sudo chmod +x "$ROOT_DIR/usr/local/bin/auralis-ultimate-gaming-rt-mode"
     
-    epic "🎉 ULTIMATE gaming + RT optimizations configured!"
+    epic "🎉 Ultimate gaming + RT optimizations configured!"
 }
 
-# Configure ultimate gaming desktop with Zen Browser
+# Configure gaming desktop with Zen Browser
 configure_ultimate_desktop() {
     epic "🎨 Setting up ultimate gaming desktop with ZEN BROWSER..."
     
@@ -645,10 +682,10 @@ create_auralis_iso() {
     sudo rsync -av "$ROOT_DIR/" "$WORK_DIR/iso-root/" || sudo cp -a "$ROOT_DIR/"/* "$WORK_DIR/iso-root/"
     
     # Create ISO
-    ISO_FILE="$OUTPUT_DIR/auralis-os-ultimate-${AURALIS_VERSION}-borealis-${ARCH}.iso"
+    ISO_FILE="$OUTPUT_DIR/auralis-os-ultimate-sequential-${AURALIS_VERSION}-borealis-${ARCH}.iso"
     
     if command -v xorriso >/dev/null; then
-        log "Creating ultimate ISO with xorriso..."
+        log "Creating ultimate sequential build ISO with xorriso..."
         sudo xorriso -as mkisofs \
             -iso-level 3 \
             -full-iso9660-filenames \
@@ -663,38 +700,38 @@ create_auralis_iso() {
             "$WORK_DIR/iso-root"
     else
         warn "Creating system archive instead of ISO"
-        sudo tar -czf "$OUTPUT_DIR/auralis-os-ultimate-${AURALIS_VERSION}-borealis-${ARCH}.tar.gz" \
+        sudo tar -czf "$OUTPUT_DIR/auralis-os-ultimate-sequential-${AURALIS_VERSION}-borealis-${ARCH}.tar.gz" \
             -C "$WORK_DIR/iso-root" .
     fi
     
     # Set permissions for GitHub Actions
     sudo chown -R runner:runner "$OUTPUT_DIR" 2>/dev/null || true
     
-    epic "✅ Auralis OS Ultimate Edition ISO created successfully!"
+    epic "✅ Auralis OS Ultimate Sequential Build ISO created!"
 }
 
 # Display ultimate completion
 display_ultimate_completion() {
     echo ""
-    echo -e "${PURPLE}🎊 AURALIS OS ULTIMATE EDITION BUILD COMPLETED! 🎊${NC}"
+    echo -e "${PURPLE}🎊 AURALIS OS ULTIMATE SEQUENTIAL BUILD COMPLETED! 🎊${NC}"
     echo ""
-    echo -e "${GREEN}📋 Ultimate Build Information:${NC}"
-    echo "  🏷️  Version: $AURALIS_VERSION ($AURALIS_CODENAME) - ULTIMATE EDITION"
-    echo "  🏗️  Architecture: $ARCH"
+    echo -e "${GREEN}📋 Ultimate Sequential Build Information:${NC}"
+    echo "  🏷️ Version: $AURALIS_VERSION ($AURALIS_CODENAME) - ULTIMATE SEQUENTIAL"
+    echo "  🏗️ Architecture: $ARCH"
     echo "  📅 Build Date: $(date)"
-    echo "  🌐 Build Platform: GitHub Actions (Ultimate Cloud)"
-    echo "  💪 Builder: Vacation Mode - Professional Quality"
-    echo "  🏖️  Build Duration: Taking time for perfection!"
+    echo "  🌐 Build Platform: GitHub Actions (Sequential Cloud Build)"
+    echo "  💪 Build Method: 3-Phase Sequential Resource Management"
+    echo "  🧠 Strategy: Kernel → Cleanup → System → Success!"
     
     if [[ "$CUSTOM_KERNEL" == "true" ]]; then
         echo "  ⚡ Kernel: ULTIMATE Auralis Kernel $AURALIS_KERNEL_VERSION"
         echo "           (linux-zen + PREEMPT_RT + 2000 Hz)"
     else
-        echo "  ⚡ Kernel: Standard Zen Gaming Kernel (Still Amazing!)"
+        echo "  ⚡ Kernel: Standard Zen Gaming Kernel"
     fi
     
     echo ""
-    echo -e "${BLUE}🎮 ULTIMATE Gaming Features:${NC}"
+    echo -e "${BLUE}🎮 ULTIMATE Sequential Build Features:${NC}"
     echo "  🔥 linux-zen + PREEMPT_RT + 2000 Hz kernel (0.5ms latency)"
     echo "  🌟 Gorgeous ZEN BROWSER (Chef's kiss aesthetics!)"
     echo "  ⚡ zram + earlyoom for maximum performance"
@@ -702,60 +739,41 @@ display_ultimate_completion() {
     echo "  🌐 BBR network optimization for online gaming"
     echo "  🚀 Ultra-low latency optimizations throughout"
     echo "  🎵 Real-time audio support for pro gaming"
+    echo "  🧠 Smart resource management (no more crashes!)"
     echo "  🪟 Windows-like KDE Plasma gaming interface"
-    echo "  🔧 Ultimate Gaming + RT Mode script included"
     echo ""
     echo -e "${BLUE}🔑 Default Credentials:${NC}"
     echo "  👤 Root: root / auralis"
     echo "  👤 User: auralis / auralis"
     echo ""
-    echo -e "${BLUE}🚀 Ultimate Performance Commands:${NC}"
-    echo "  🔥 Activate Ultimate Mode: sudo auralis-ultimate-gaming-rt-mode"
-    echo "  📊 Check Performance: htop, neofetch"
-    echo "  🎵 RT Performance: chrt -f 90 [your-app]"
-    echo ""
-    echo -e "${GREEN}📁 Ultimate Output Files:${NC}"
-    if [[ -f "$OUTPUT_DIR/auralis-os-ultimate-${AURALIS_VERSION}-borealis-${ARCH}.iso" ]]; then
-        echo "  💿 Ultimate ISO: auralis-os-ultimate-${AURALIS_VERSION}-borealis-${ARCH}.iso"
-        echo "  📏 Size: $(du -h $OUTPUT_DIR/auralis-os-ultimate-${AURALIS_VERSION}-borealis-${ARCH}.iso | cut -f1)"
+    echo -e "${GREEN}📁 Ultimate Sequential Build Output:${NC}"
+    if [[ -f "$OUTPUT_DIR/auralis-os-ultimate-sequential-${AURALIS_VERSION}-borealis-${ARCH}.iso" ]]; then
+        echo "  💿 Ultimate ISO: auralis-os-ultimate-sequential-${AURALIS_VERSION}-borealis-${ARCH}.iso"
+        echo "  📏 Size: $(du -h $OUTPUT_DIR/auralis-os-ultimate-sequential-${AURALIS_VERSION}-borealis-${ARCH}.iso | cut -f1)"
     fi
     echo ""
-    echo -e "${PURPLE}🌌 Auralis OS Ultimate Edition - The Most Advanced Gaming Linux! 🌌${NC}"
-    echo -e "${PURPLE}🔥 linux-zen + PREEMPT_RT + 2000 Hz + Zen Browser = PERFECTION! 🔥${NC}"
-    echo -e "${PURPLE}🏖️  Built with Vacation Time - No Rush, Only Excellence! 🏖️${NC}"
+    echo -e "${PURPLE}🌌 Auralis OS Ultimate Sequential Edition - Perfected! 🌌${NC}"
+    echo -e "${PURPLE}🧠 Smart Resource Management = Reliable Ultimate Builds! 🧠${NC}"
+    echo -e "${PURPLE}🏖️ Vacation Quality Achieved - No Rush, Pure Excellence! 🏖️${NC}"
     echo ""
 }
 
 # Cleanup function
 cleanup() {
-    log "🧹 Cleaning up ultimate build environment..."
+    log "🧹 Final cleanup..."
     unmount_chroot 2>/dev/null || true
-    # Clean up ccache
-    ccache -C 2>/dev/null || true
+    # Clean up saved kernel artifacts if build completed
+    rm -rf "$KERNEL_SAVE_DIR" 2>/dev/null || true
 }
 
-# Main ultimate build process
-main() {
-    # Set trap for cleanup
-    trap cleanup EXIT
+# PHASE 3: Build the system
+build_system() {
+    phase "🏗️ PHASE 3: Building System with Ultimate Kernel"
+    show_resources "Phase 3 Start"
     
-    # Start the ultimate build
-    display_banner
-    free_disk_space
-    install_ultimate_dependencies
-    setup_ultimate_workspace
-    
-    # Build ultimate kernel (with fallback)
-    if build_ultimate_kernel; then
-        CUSTOM_KERNEL=true
-    else
-        CUSTOM_KERNEL=false
-    fi
-    
-    # Build the ultimate gaming OS
     bootstrap_void_linux
     mount_chroot
-    install_ultimate_kernel
+    install_saved_kernel
     install_ultimate_gaming_packages
     configure_auralis_system
     configure_ultimate_optimizations
@@ -763,11 +781,38 @@ main() {
     unmount_chroot
     create_auralis_iso
     
+    show_resources "Phase 3 End"
+    epic "🎯 Phase 3 COMPLETE! System built with ultimate kernel!"
+}
+
+# Main sequential build process
+main() {
+    # Set trap for cleanup
+    trap cleanup EXIT
+    
+    # Start the ultimate sequential build
+    display_banner
+    install_build_dependencies
+    setup_workspace
+    
+    # PHASE 1: Build ultimate kernel
+    if build_ultimate_kernel; then
+        save_kernel_and_cleanup
+    else
+        warn "Phase 1 failed, will use standard kernel"
+        KERNEL_AVAILABLE=false
+        save_kernel_and_cleanup
+    fi
+    
+    # PHASE 3: Build system with saved kernel
+    build_system
+    
     # Show ultimate completion
     display_ultimate_completion
     
-    epic "🎉 Auralis OS Ultimate Edition Build Complete - The Future of Gaming Linux!"
+    epic "🎉 Auralis OS Ultimate Sequential Build Complete!"
+    epic "🧠 Smart resource management delivered the impossible!"
 }
 
-# Execute ultimate build
+# Execute ultimate sequential build
 main "$@"

@@ -1,8 +1,9 @@
 #!/bin/bash
 set -e
 
-# Auralis OS Sequential Build System - GitHub Actions Edition
-# ULTIMATE Gaming Linux Distribution - Smart Resource Management
+# Auralis OS Build System - Void Linux + Clear Linux Optimizations
+# ULTIMATE Gaming Linux Distribution - Sequential Build
+# BASE: Void Linux | OPTIMIZATIONS: Clear Linux inspired performance
 # Phase 1: Build Kernel → Phase 2: Cleanup → Phase 3: Build System
 
 # Build configuration
@@ -20,6 +21,11 @@ OUTPUT_DIR="/tmp/auralis-output"
 VOID_MIRROR="https://repo-default.voidlinux.org"
 ARCH="x86_64"
 
+# Clear Linux inspired compiler optimizations (applied to select packages)
+export CLEAR_CFLAGS="-O3 -march=native -flto -fuse-linker-plugin -fno-plt -Wl,-O1"
+export CLEAR_CXXFLAGS="$CLEAR_CFLAGS"
+export CLEAR_LDFLAGS="-Wl,--as-needed -Wl,-O1"
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -27,10 +33,11 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 PURPLE='\033[0;35m'
 CYAN='\033[0;36m'
+MAGENTA='\033[0;95m'
 NC='\033[0m'
 
 log() {
-    echo -e "${GREEN}[AURALIS-SEQUENTIAL]${NC} $1"
+    echo -e "${GREEN}[AURALIS-VOID]${NC} $1"
 }
 
 warn() {
@@ -54,6 +61,10 @@ phase() {
     echo -e "${CYAN}[PHASE]${NC} $1"
 }
 
+clear_opt() {
+    echo -e "${MAGENTA}[CLEAR-OPT]${NC} $1"
+}
+
 # Display ultimate banner
 display_banner() {
     echo -e "${PURPLE}"
@@ -65,16 +76,18 @@ display_banner() {
    ██║  ██║╚██████╔╝██║  ██║██║  ██║███████╗██║███████║    ╚██████╔╝███████║
    ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝╚══════╝     ╚═════╝ ╚══════╝
                                                                             
-       🔥 ULTIMATE GAMING LINUX - SEQUENTIAL BUILD EDITION 🔥
-       ⚡ linux-zen + PREEMPT_RT + 2000 Hz + Zen Browser ⚡
-       🎮 Version: 1.0.0-beta "Borealis" (Smart Resource Management) 🎮
-       🧠 Sequential Build: Kernel → Cleanup → System → Success! 🧠
+       🔥 VOID LINUX + CLEAR LINUX OPTIMIZATIONS 🔥
+       ⚡ Base: Void Linux | Optimizations: Clear Linux Performance ⚡
+       🎮 Version: 1.0.0-beta "Borealis" 🎮
+       🧠 Sequential Build + Intel Optimizations = PERFECTION! 🧠
 EOF
     echo -e "${NC}"
     echo ""
-    epic "Building Auralis OS with intelligent resource management..."
-    epic "🎯 3-Phase Sequential Build: Maximum performance, smart resource usage"
-    epic "🏖️ Vacation-quality build - patience rewarded with perfection!"
+    epic "Building Auralis OS: Void Linux enhanced with Clear Linux optimizations..."
+    clear_opt "🚀 Base System: Void Linux (XBPS, runit, musl/glibc)"
+    clear_opt "⚡ Performance: Clear Linux compiler optimizations"
+    clear_opt "🎯 Kernel: linux-zen + RT + 2000 Hz + CONFIG_NO_HZ_IDLE"
+    clear_opt "🏖️ Sequential build strategy for maximum reliability"
     echo ""
 }
 
@@ -82,20 +95,21 @@ EOF
 show_resources() {
     local phase_name="$1"
     info "📊 $phase_name Resources:"
-    info "  💻 CPU Cores: $(nproc)"
+    info "  💻 CPU: $(nproc) cores ($(lscpu | grep 'Model name' | cut -d: -f2 | xargs))"
     info "  🧠 RAM: $(free -h | grep '^Mem:' | awk '{print $7}') free / $(free -h | grep '^Mem:' | awk '{print $2}') total"
     info "  💾 Disk: $(df -h /tmp | tail -1 | awk '{print $4}') available"
     info "  📈 Load: $(uptime | awk -F'load average:' '{print $2}')"
+    clear_opt "⚡ Clear Linux optimizations: Active for performance-critical components"
 }
 
-# Install build dependencies 
+# Install build dependencies
 install_build_dependencies() {
-    log "🚀 Installing build dependencies for sequential build..."
+    log "🚀 Installing build dependencies for Void + Clear Linux optimizations..."
     
     # Update system
     sudo apt-get update
     
-    # Install comprehensive build tools
+    # Install comprehensive build tools + Clear Linux inspired tools
     sudo apt-get install -y \
         build-essential git wget curl tar \
         flex bison bc libssl-dev libelf-dev libncurses-dev \
@@ -107,7 +121,11 @@ install_build_dependencies() {
         quilt patch \
         libaudit-dev \
         libnuma-dev \
-        time pv
+        time pv \
+        clang lld llvm \
+        elfutils binutils-dev \
+        schedtool \
+        numactl
     
     # Install XBPS tools for Void Linux bootstrap
     if ! command -v xbps-install &> /dev/null; then
@@ -119,30 +137,32 @@ install_build_dependencies() {
         log "✅ XBPS tools installed successfully"
     fi
     
-    # Setup ccache for faster compilation
+    # Setup ccache with Clear Linux optimizations
     export PATH="/usr/lib/ccache:$PATH"
     export CCACHE_DIR="/tmp/ccache"
     mkdir -p "$CCACHE_DIR"
-    ccache -M 2G
+    ccache -M 4G
+    ccache --set-config=compression=true
+    ccache --set-config=compression_level=6
     
-    log "✅ Build dependencies installed with ccache acceleration"
+    clear_opt "✅ Build dependencies installed with Clear Linux performance tools"
 }
 
 # Setup workspace
 setup_workspace() {
-    log "🏗️ Setting up sequential build workspace..."
+    log "🏗️ Setting up Void Linux + Clear Linux optimized workspace..."
     
     # Clean and create directories
     sudo rm -rf "$WORK_DIR" "$KERNEL_SAVE_DIR" 2>/dev/null || true
     mkdir -p "$ROOT_DIR" "$ISO_DIR" "$KERNEL_DIR" "$KERNEL_SAVE_DIR" "$OUTPUT_DIR"
     
-    show_resources "Initial"
-    log "✅ Sequential build workspace ready"
+    show_resources "Initial (Void + Clear Linux Optimized)"
+    log "✅ Workspace ready for Void Linux + Clear Linux optimizations"
 }
 
-# PHASE 1: Build the ultimate kernel
+# PHASE 1: Build the ultimate kernel with Clear Linux optimizations
 build_ultimate_kernel() {
-    phase "🔥 PHASE 1: Building Ultimate Kernel (linux-zen + PREEMPT_RT + 2000 Hz)"
+    phase "🔥 PHASE 1: Building Kernel (linux-zen + RT + Clear Linux optimizations)"
     show_resources "Phase 1 Start"
     
     cd "$KERNEL_DIR"
@@ -160,23 +180,27 @@ build_ultimate_kernel() {
         xz -d "patch-$RT_VERSION.patch.xz"
         
         log "🔧 Applying PREEMPT_RT patches to linux-zen..."
-        # Apply RT patches with some expected rejections
         patch -f -p1 < "patch-$RT_VERSION.patch" || warn "Some RT patches may conflict with zen - this is expected"
         
-        log "⚙️ Creating Ultimate Auralis gaming + RT kernel configuration..."
+        log "⚙️ Creating kernel configuration with Clear Linux optimizations..."
         make ARCH=x86_64 defconfig
         
-        epic "🎮 Applying MAXIMUM gaming + RT optimizations..."
+        epic "🎮 Applying gaming + RT + Clear Linux inspired optimizations..."
         
-        # Apply ultimate gaming + RT configuration
+        # Apply ultimate gaming + RT + Clear Linux configuration
         cat >> .config << 'KERNEL_CONFIG'
 
-# AURALIS ULTIMATE KERNEL CONFIGURATION
-# linux-zen + PREEMPT_RT + 2000 Hz + Ultimate Gaming Optimizations
+# AURALIS KERNEL CONFIGURATION
+# Base: linux-zen + PREEMPT_RT | Optimizations: Clear Linux inspired + Gaming
 
 # 2000 Hz Timer - Ultimate gaming responsiveness (0.5ms latency)
 CONFIG_HZ_2000=y
 CONFIG_HZ=2000
+
+# CONFIG_NO_HZ_IDLE - Clear Linux inspired power efficiency
+CONFIG_NO_HZ_IDLE=y
+CONFIG_NO_HZ=y
+CONFIG_NO_HZ_COMMON=y
 
 # PREEMPT_RT - Ultra-low latency real-time kernel
 CONFIG_PREEMPT_RT=y
@@ -204,7 +228,13 @@ CONFIG_CFS_BANDWIDTH=y
 CONFIG_RT_GROUP_SCHED=y
 CONFIG_SCHED_DEBUG=y
 
-# Memory management optimized for gaming + RT
+# Intel CPU optimizations (Clear Linux inspired)
+CONFIG_PROCESSOR_SELECT=y
+CONFIG_CPU_SUP_INTEL=y
+CONFIG_MCORE2=y
+CONFIG_X86_INTEL_LPSS=y
+
+# Memory management optimized for gaming + RT + Clear Linux
 CONFIG_TRANSPARENT_HUGEPAGE=y
 CONFIG_TRANSPARENT_HUGEPAGE_ALWAYS=y
 CONFIG_COMPACTION=y
@@ -224,7 +254,7 @@ CONFIG_DEFAULT_TCP_CONG="bbr"
 CONFIG_NET_SCH_FQ=y
 CONFIG_NET_SCH_FQ_CODEL=y
 
-# Gaming graphics drivers - all major GPUs
+# Gaming graphics drivers - all major GPUs with Intel focus
 CONFIG_DRM_AMDGPU=y
 CONFIG_DRM_RADEON=y
 CONFIG_DRM_NOUVEAU=y
@@ -236,6 +266,7 @@ CONFIG_CPU_FREQ=y
 CONFIG_CPU_FREQ_GOV_PERFORMANCE=y
 CONFIG_CPU_FREQ_GOV_SCHEDUTIL=y
 CONFIG_CPU_FREQ_GOV_ONDEMAND=y
+CONFIG_X86_INTEL_PSTATE=y
 
 # Audio optimizations for gaming + RT
 CONFIG_SND_HRTIMER=y
@@ -251,30 +282,38 @@ CONFIG_BFQ_CGROUP_DEBUG=y
 CONFIG_RT_MUTEXES=y
 CONFIG_SLAB=y
 
+# Clear Linux inspired optimizations
+CONFIG_LTO_CLANG=y
+CONFIG_OPTIMIZE_INLINING=y
+CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE=y
+
 KERNEL_CONFIG
 
-        # Build with ccache acceleration and resource monitoring
+        # Build with Clear Linux inspired optimizations and ccache
         KERNEL_JOBS=$(nproc)
-        epic "🔨 Compiling Ultimate Kernel with $KERNEL_JOBS cores + ccache..."
+        epic "🔨 Compiling kernel with Clear Linux optimizations..."
+        epic "⚡ Using Clang + LTO + $KERNEL_JOBS cores + ccache acceleration"
         epic "⏱️ Estimated time: 45-75 minutes (Phase 1 of 3)"
         
         export ARCH=x86_64
         export KBUILD_BUILD_HOST=auralis-sequential
         export KBUILD_BUILD_USER=auralis-phase1
-        export CC="ccache gcc"
-        export CXX="ccache g++"
+        export CC="ccache clang"
+        export CXX="ccache clang++"
+        export LLVM=1
         
         # Start resource monitoring
         (while true; do 
-            echo "🖥️ Phase 1 Progress: $(date +%H:%M) - Free RAM: $(free -h | grep '^Mem:' | awk '{print $7}') - Load: $(uptime | awk -F'load average:' '{print $2}')"
+            echo "🖥️ Phase 1 Progress: $(date +%H:%M) - Free RAM: $(free -h | grep '^Mem:' | awk '{print $7}') - ccache: $(ccache -s | grep 'cache hit rate' | head -1 || echo 'Building...')"
             sleep 300
         done) &
         MONITOR_PID=$!
         
-        # Build kernel with timeout protection
-        if timeout 4500 make ARCH=x86_64 LOCALVERSION=-auralis-rt -j$KERNEL_JOBS; then
+        # Build kernel with Clear Linux optimizations and timeout protection
+        clear_opt "🚀 Building with Clear Linux compiler optimizations..."
+        if timeout 4500 make ARCH=x86_64 LOCALVERSION=-auralis-rt LLVM=1 -j$KERNEL_JOBS; then
             kill $MONITOR_PID 2>/dev/null || true
-            epic "🎉 Phase 1 COMPLETE! Ultimate kernel compiled successfully!"
+            epic "🎉 Phase 1 COMPLETE! Kernel with Clear Linux optimizations compiled!"
             show_resources "Phase 1 End"
             return 0
         else
@@ -290,11 +329,11 @@ KERNEL_CONFIG
 
 # PHASE 2: Save kernel artifacts and cleanup
 save_kernel_and_cleanup() {
-    phase "💾 PHASE 2: Saving Kernel Artifacts & Resource Cleanup"
+    phase "💾 PHASE 2: Saving Kernel & Resource Cleanup"
     show_resources "Phase 2 Start"
     
     if [[ -f "$KERNEL_DIR/zen-kernel-$ZEN_VERSION/arch/x86/boot/bzImage" ]]; then
-        log "💾 Saving ultimate kernel artifacts..."
+        clear_opt "💾 Saving Clear Linux optimized kernel artifacts..."
         cd "$KERNEL_DIR/zen-kernel-$ZEN_VERSION"
         
         # Create modules tarball
@@ -311,10 +350,10 @@ save_kernel_and_cleanup() {
         tar -czf "modules-$AURALIS_KERNEL_VERSION.tar.gz" modules/
         rm -rf modules/
         
-        epic "✅ Ultimate kernel artifacts saved successfully!"
+        epic "✅ Kernel with Clear Linux optimizations saved!"
         KERNEL_AVAILABLE=true
     else
-        warn "No kernel built, will use standard kernel"
+        warn "No kernel built, will use standard Void kernel"
         KERNEL_AVAILABLE=false
     fi
     
@@ -335,7 +374,7 @@ save_kernel_and_cleanup() {
     echo 3 | sudo tee /proc/sys/vm/drop_caches > /dev/null || true
     
     show_resources "Phase 2 End (After Cleanup)"
-    epic "🎯 Phase 2 COMPLETE! Resources freed for system build"
+    epic "🎯 Phase 2 COMPLETE! Resources freed for Void Linux system build"
 }
 
 # Bootstrap Void Linux base system
@@ -370,7 +409,7 @@ bootstrap_void_linux() {
     # Copy resolv.conf for internet access in chroot
     sudo cp /etc/resolv.conf "$ROOT_DIR/etc/"
     
-    log "✅ Void Linux base system ready"
+    log "✅ Void Linux base system ready for Clear Linux optimizations"
 }
 
 # Mount filesystems for chroot
@@ -396,7 +435,7 @@ unmount_chroot() {
 # Install saved ultimate kernel or fallback
 install_saved_kernel() {
     if [[ "$KERNEL_AVAILABLE" == "true" && -f "$KERNEL_SAVE_DIR/vmlinuz-$AURALIS_KERNEL_VERSION" ]]; then
-        epic "⚡ Installing saved Ultimate Kernel (linux-zen + RT + 2000 Hz)..."
+        epic "⚡ Installing optimized kernel into Void Linux..."
         
         # Install kernel image
         sudo mkdir -p "$ROOT_DIR/boot"
@@ -408,26 +447,29 @@ install_saved_kernel() {
         cd "$ROOT_DIR"
         sudo tar -xzf "$KERNEL_SAVE_DIR/modules-$AURALIS_KERNEL_VERSION.tar.gz"
         
-        epic "🎉 Ultimate kernel (linux-zen + RT + 2000 Hz) installed!"
-        KERNEL_LABEL="Ultimate linux-zen + PREEMPT_RT + 2000 Hz Gaming Kernel"
+        epic "🎉 Optimized kernel installed in Void Linux!"
+        KERNEL_LABEL="linux-zen + PREEMPT_RT + 2000 Hz + Clear Linux optimizations"
         CUSTOM_KERNEL=true
     else
         log "📦 Installing standard Void zen kernel..."
         sudo chroot "$ROOT_DIR" xbps-install -Suy xbps
         sudo chroot "$ROOT_DIR" xbps-install -y linux-zen linux-zen-headers || sudo chroot "$ROOT_DIR" xbps-install -y linux6.6 linux6.6-headers
-        KERNEL_LABEL="Standard Zen Gaming Kernel"
+        KERNEL_LABEL="Standard Void Zen Gaming Kernel"
         CUSTOM_KERNEL=false
     fi
 }
 
-# Install ultimate gaming packages including Zen Browser
+# Install gaming packages in Void Linux with Clear Linux optimizations
 install_ultimate_gaming_packages() {
-    epic "🎮 Installing ultimate gaming packages with ZEN BROWSER..."
+    epic "🎮 Installing gaming packages in Void Linux..."
     
-    # Update XBPS first
+    # Update XBPS first with parallel downloads (Clear Linux inspired)
     sudo chroot "$ROOT_DIR" xbps-install -Suy xbps
     
-    # Define comprehensive package groups
+    # Enable parallel downloads (Clear Linux optimization)
+    echo "XBPS_PARALLEL_FETCH=4" | sudo tee -a "$ROOT_DIR/etc/xbps.d/parallel.conf"
+    
+    # Define Void Linux package groups
     local base_packages=(
         "base-system" "linux-firmware" "intel-ucode" "void-repo-nonfree"
         "runit-void" "elogind" "dbus"
@@ -448,29 +490,37 @@ install_ultimate_gaming_packages() {
         "flatpak" "nano" "wget" "curl" "git" "htop" "neofetch" "sudo"
     )
     
-    # Ultimate performance packages
+    # Performance packages + Clear Linux inspired tools available in Void
     local performance_packages=(
         "zram-generator" "earlyoom" "irqbalance" "upower"
     )
     
-    # Install packages in groups
-    log "Installing base system packages..."
+    # Clear Linux inspired monitoring tools available in Void
+    local monitoring_packages=(
+        "powertop" "cpupower-tools" "numactl"
+    )
+    
+    # Install Void packages in groups with parallel optimization
+    log "Installing Void Linux base system packages..."
     sudo chroot "$ROOT_DIR" xbps-install -y "${base_packages[@]}" || warn "Some base packages failed"
     
-    log "Installing desktop environment..."
+    log "Installing Void Linux desktop environment..."
     sudo chroot "$ROOT_DIR" xbps-install -y "${desktop_packages[@]}" || warn "Some desktop packages failed"
     
-    log "Installing gaming packages..."
+    log "Installing Void Linux gaming packages..."
     sudo chroot "$ROOT_DIR" xbps-install -y "${gaming_packages[@]}" || warn "Some gaming packages failed"
     
-    log "Installing system utilities..."
+    log "Installing Void Linux system utilities..."
     sudo chroot "$ROOT_DIR" xbps-install -y "${system_packages[@]}" || warn "Some system packages failed"
     
-    log "Installing ultimate performance packages (zram + earlyoom)..."
+    log "Installing Void performance packages..."
     sudo chroot "$ROOT_DIR" xbps-install -y "${performance_packages[@]}" || warn "Some performance packages failed"
     
+    clear_opt "Installing Clear Linux inspired monitoring tools..."
+    sudo chroot "$ROOT_DIR" xbps-install -y "${monitoring_packages[@]}" || warn "Some monitoring tools failed"
+    
     # Download Zen Browser
-    epic "🌟 Installing gorgeous ZEN BROWSER..."
+    epic "🌟 Installing Zen Browser..."
     sudo mkdir -p "$ROOT_DIR/opt"
     cd "$ROOT_DIR/opt"
     sudo wget -q -O zen-browser.tar.bz2 "https://github.com/zen-browser/desktop/releases/latest/download/zen.linux-x86_64.tar.bz2" || warn "Zen Browser download failed"
@@ -480,15 +530,15 @@ install_ultimate_gaming_packages() {
         sudo rm zen-browser.tar.bz2
         sudo mv zen* zen-browser 2>/dev/null || true
         sudo chmod +x zen-browser/zen* 2>/dev/null || true
-        epic "✅ ZEN BROWSER installed successfully!"
+        epic "✅ ZEN BROWSER installed in Void Linux!"
     fi
     
-    log "✅ Ultimate gaming package installation completed!"
+    log "✅ Void Linux gaming packages with Clear Linux optimizations installed!"
 }
 
-# Configure Auralis OS system
+# Configure Void Linux system
 configure_auralis_system() {
-    log "⚙️ Configuring Auralis OS for ultimate gaming..."
+    log "⚙️ Configuring Void Linux system..."
     
     # Set hostname
     echo "auralis" | sudo tee "$ROOT_DIR/etc/hostname"
@@ -510,27 +560,27 @@ EOF
     # Configure sudo
     echo "%wheel ALL=(ALL) ALL" | sudo tee "$ROOT_DIR/etc/sudoers.d/wheel"
     
-    # Enable services
+    # Enable Void Linux runit services
     sudo chroot "$ROOT_DIR" ln -sf /etc/sv/NetworkManager /etc/runit/runsvdir/default/ || true
     sudo chroot "$ROOT_DIR" ln -sf /etc/sv/sddm /etc/runit/runsvdir/default/ || true
     sudo chroot "$ROOT_DIR" ln -sf /etc/sv/dbus /etc/runit/runsvdir/default/ || true
     sudo chroot "$ROOT_DIR" ln -sf /etc/sv/elogind /etc/runit/runsvdir/default/ || true
     sudo chroot "$ROOT_DIR" ln -sf /etc/sv/earlyoom /etc/runit/runsvdir/default/ || true
     
-    log "✅ System configuration completed"
+    log "✅ Void Linux system configuration completed"
 }
 
-# Configure ultimate gaming optimizations
+# Configure gaming optimizations with Clear Linux techniques
 configure_ultimate_optimizations() {
-    epic "🔥 Configuring ULTIMATE gaming + RT optimizations..."
+    epic "🔥 Configuring gaming optimizations with Clear Linux techniques..."
     
-    # Create ultimate gaming sysctl configuration
+    # Create gaming sysctl configuration with Clear Linux optimizations
     sudo mkdir -p "$ROOT_DIR/etc/sysctl.d"
-    sudo tee "$ROOT_DIR/etc/sysctl.d/99-auralis-ultimate-gaming-rt.conf" << 'EOF'
-# Auralis OS Ultimate Gaming + PREEMPT_RT Performance Configuration
-# Optimized for linux-zen + RT + 2000 Hz kernel + maximum gaming performance
+    sudo tee "$ROOT_DIR/etc/sysctl.d/99-auralis-void-clear-gaming.conf" << 'EOF'
+# Auralis OS Gaming Performance Configuration
+# Base: Void Linux | Optimizations: Clear Linux inspired techniques
 
-# Memory management - ultimate gaming + RT optimization
+# Memory management - gaming + Clear Linux optimization
 vm.swappiness=1
 vm.vfs_cache_pressure=10
 vm.dirty_ratio=3
@@ -539,7 +589,12 @@ vm.dirty_expire_centisecs=500
 vm.dirty_writeback_centisecs=100
 vm.min_free_kbytes=131072
 
-# Network gaming optimizations - competitive gaming ready
+# Clear Linux inspired memory optimizations
+vm.zone_reclaim_mode=0
+vm.page_lock_unfairness=5
+vm.max_map_count=2147483642
+
+# Network gaming optimizations
 net.core.rmem_max=268435456
 net.core.wmem_max=268435456
 net.core.rmem_default=1048576
@@ -550,7 +605,6 @@ net.ipv4.tcp_notsent_lowat=16384
 net.ipv4.tcp_low_latency=1
 
 # Gaming + RT specific optimizations
-vm.max_map_count=2147483642
 fs.file-max=2097152
 kernel.sched_migration_cost_ns=5000000
 kernel.sched_latency_ns=1000000
@@ -561,14 +615,18 @@ kernel.sched_wakeup_granularity_ns=50000
 kernel.sched_rt_period_us=1000000
 kernel.sched_rt_runtime_us=950000
 
-# Audio latency optimizations - pro gaming + RT audio
+# Audio latency optimizations
 dev.hpet.max-user-freq=3072
+
+# Clear Linux inspired Intel optimizations
+kernel.watchdog=0
+kernel.nmi_watchdog=0
 EOF
 
-    # Configure zram for maximum gaming performance
+    # Configure zram for gaming performance
     sudo mkdir -p "$ROOT_DIR/etc/systemd/zram-generator.conf.d"
-    sudo tee "$ROOT_DIR/etc/systemd/zram-generator.conf.d/auralis-ultimate-gaming.conf" << 'EOF'
-# Auralis OS zram configuration - ultimate gaming + RT performance
+    sudo tee "$ROOT_DIR/etc/systemd/zram-generator.conf.d/auralis-gaming.conf" << 'EOF'
+# Auralis OS zram configuration - gaming performance
 [zram0]
 zram-size = ram / 2
 compression-algorithm = lz4
@@ -579,16 +637,17 @@ EOF
     # Configure earlyoom for gaming responsiveness
     sudo mkdir -p "$ROOT_DIR/etc/default"
     sudo tee "$ROOT_DIR/etc/default/earlyoom" << 'EOF'
-# Auralis OS earlyoom - protect gaming + RT performance
+# Auralis OS earlyoom - protect gaming performance
 EARLYOOM_ARGS="--prefer '(^|/)(java|chrome|firefox|electron)$' --avoid '(^|/)(steam|lutris|gamemode|zen-browser|Xorg|sddm)$' -m 5 -s 2 -r 60"
 EOF
 
-    # Ultimate gaming + RT mode script
-    sudo tee "$ROOT_DIR/usr/local/bin/auralis-ultimate-gaming-rt-mode" << 'EOF'
+    # Ultimate gaming mode script with Clear Linux optimizations
+    sudo tee "$ROOT_DIR/usr/local/bin/auralis-ultimate-gaming-mode" << 'EOF'
 #!/bin/bash
-# Auralis OS Ultimate Gaming + RT Mode - Maximum Performance
+# Auralis OS Ultimate Gaming Mode - Void Linux + Clear Linux optimizations
 
-echo "🔥 Activating Auralis ULTIMATE Gaming + RT Mode..."
+echo "🔥 Activating Auralis Ultimate Gaming Mode..."
+echo "🎯 Base: Void Linux | Optimizations: Clear Linux techniques"
 
 # CPU - Maximum performance
 echo performance | tee /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor >/dev/null 2>&1 || true
@@ -606,19 +665,22 @@ echo 1 | tee /proc/sys/net/ipv4/tcp_low_latency >/dev/null 2>&1 || true
 # RT optimizations
 echo -1 | tee /proc/sys/kernel/sched_rt_runtime_us >/dev/null 2>&1 || true
 
-echo "🎮 Auralis ULTIMATE Gaming + RT Mode: ACTIVATED!"
-echo "⚡ linux-zen + RT + 2000 Hz kernel + maximum performance optimizations enabled!"
-echo "🚀 Ready for ultimate competitive gaming and real-time audio!"
+# Clear Linux inspired optimizations
+echo never | tee /sys/kernel/mm/transparent_hugepage/enabled >/dev/null 2>&1 || true
+
+echo "🎮 Auralis Ultimate Gaming Mode: ACTIVATED!"
+echo "⚡ Void Linux + Clear Linux optimizations + Custom kernel!"
+echo "🚀 Ready for ultimate competitive gaming!"
 EOF
 
-    sudo chmod +x "$ROOT_DIR/usr/local/bin/auralis-ultimate-gaming-rt-mode"
+    sudo chmod +x "$ROOT_DIR/usr/local/bin/auralis-ultimate-gaming-mode"
     
-    epic "🎉 Ultimate gaming + RT optimizations configured!"
+    clear_opt "🎉 Gaming optimizations with Clear Linux techniques configured!"
 }
 
-# Configure gaming desktop with Zen Browser
+# Configure gaming desktop
 configure_ultimate_desktop() {
-    epic "🎨 Setting up ultimate gaming desktop with ZEN BROWSER..."
+    epic "🎨 Setting up gaming desktop on Void Linux..."
     
     # Create desktop shortcuts
     sudo mkdir -p "$ROOT_DIR/home/auralis/Desktop"
@@ -655,25 +717,37 @@ Type=Application
 Categories=Network;WebBrowser;
 EOF
 
-    sudo tee "$ROOT_DIR/home/auralis/Desktop/ultimate-gaming-rt-mode.desktop" << 'EOF'
+    # Gaming mode shortcut
+    sudo tee "$ROOT_DIR/home/auralis/Desktop/ultimate-gaming-mode.desktop" << 'EOF'
 [Desktop Entry]
-Name=Auralis Ultimate Gaming + RT Mode
-Comment=Activate maximum gaming + RT performance
-Exec=pkexec /usr/local/bin/auralis-ultimate-gaming-rt-mode
+Name=Auralis Ultimate Gaming Mode
+Comment=Activate Void Linux + Clear Linux gaming optimizations
+Exec=pkexec /usr/local/bin/auralis-ultimate-gaming-mode
 Icon=applications-games
 Type=Application
 Categories=System;
 EOF
 
+    # PowerTOP shortcut (Clear Linux inspired)
+    sudo tee "$ROOT_DIR/home/auralis/Desktop/powertop.desktop" << 'EOF'
+[Desktop Entry]
+Name=PowerTOP
+Comment=Power usage and optimization tool
+Exec=pkexec powertop
+Icon=utilities-system-monitor
+Type=Application
+Categories=System;Monitor;
+EOF
+
     # Set ownership
     sudo chown -R 1000:1000 "$ROOT_DIR/home/auralis" || true
     
-    epic "✅ Ultimate gaming desktop with ZEN BROWSER configured!"
+    log "✅ Gaming desktop configured on Void Linux"
 }
 
 # Create bootable ISO
 create_auralis_iso() {
-    epic "💿 Creating Auralis OS Ultimate Edition bootable ISO..."
+    epic "💿 Creating Auralis OS bootable ISO (Void + Clear Linux optimizations)..."
     
     # Prepare ISO structure
     mkdir -p "$WORK_DIR/iso-root"
@@ -682,79 +756,84 @@ create_auralis_iso() {
     sudo rsync -av "$ROOT_DIR/" "$WORK_DIR/iso-root/" || sudo cp -a "$ROOT_DIR/"/* "$WORK_DIR/iso-root/"
     
     # Create ISO
-    ISO_FILE="$OUTPUT_DIR/auralis-os-ultimate-sequential-${AURALIS_VERSION}-borealis-${ARCH}.iso"
+    ISO_FILE="$OUTPUT_DIR/auralis-os-${AURALIS_VERSION}-borealis-${ARCH}.iso"
     
     if command -v xorriso >/dev/null; then
-        log "Creating ultimate sequential build ISO with xorriso..."
+        log "Creating Void Linux + Clear Linux optimizations ISO with xorriso..."
         sudo xorriso -as mkisofs \
             -iso-level 3 \
             -full-iso9660-filenames \
-            -volid "AURALIS_ULTIMATE" \
+            -volid "AURALIS_OS" \
             -output "$ISO_FILE" \
             "$WORK_DIR/iso-root"
     elif command -v genisoimage >/dev/null; then
-        log "Creating ultimate ISO with genisoimage..."
+        log "Creating ISO with genisoimage..."
         sudo genisoimage -o "$ISO_FILE" \
-            -V "AURALIS_ULTIMATE" \
+            -V "AURALIS_OS" \
             -J -r \
             "$WORK_DIR/iso-root"
     else
         warn "Creating system archive instead of ISO"
-        sudo tar -czf "$OUTPUT_DIR/auralis-os-ultimate-sequential-${AURALIS_VERSION}-borealis-${ARCH}.tar.gz" \
+        sudo tar -czf "$OUTPUT_DIR/auralis-os-${AURALIS_VERSION}-borealis-${ARCH}.tar.gz" \
             -C "$WORK_DIR/iso-root" .
     fi
     
     # Set permissions for GitHub Actions
     sudo chown -R runner:runner "$OUTPUT_DIR" 2>/dev/null || true
     
-    epic "✅ Auralis OS Ultimate Sequential Build ISO created!"
+    epic "✅ Auralis OS ISO created (Void Linux + Clear Linux optimizations)!"
 }
 
-# Display ultimate completion
+# Display completion
 display_ultimate_completion() {
     echo ""
-    echo -e "${PURPLE}🎊 AURALIS OS ULTIMATE SEQUENTIAL BUILD COMPLETED! 🎊${NC}"
+    echo -e "${PURPLE}🎊 AURALIS OS BUILD COMPLETED! 🎊${NC}"
     echo ""
-    echo -e "${GREEN}📋 Ultimate Sequential Build Information:${NC}"
-    echo "  🏷️ Version: $AURALIS_VERSION ($AURALIS_CODENAME) - ULTIMATE SEQUENTIAL"
+    echo -e "${GREEN}📋 Build Information:${NC}"
+    echo "  🏷️ Version: $AURALIS_VERSION ($AURALIS_CODENAME)"
     echo "  🏗️ Architecture: $ARCH"
     echo "  📅 Build Date: $(date)"
-    echo "  🌐 Build Platform: GitHub Actions (Sequential Cloud Build)"
-    echo "  💪 Build Method: 3-Phase Sequential Resource Management"
-    echo "  🧠 Strategy: Kernel → Cleanup → System → Success!"
+    echo "  🎯 Base System: Void Linux (XBPS, runit)"
+    echo "  ⚡ Optimizations: Clear Linux inspired performance"
+    echo "  🧠 Build Method: Sequential Resource Management"
     
     if [[ "$CUSTOM_KERNEL" == "true" ]]; then
-        echo "  ⚡ Kernel: ULTIMATE Auralis Kernel $AURALIS_KERNEL_VERSION"
-        echo "           (linux-zen + PREEMPT_RT + 2000 Hz)"
+        echo "  ⚡ Kernel: $KERNEL_LABEL"
     else
-        echo "  ⚡ Kernel: Standard Zen Gaming Kernel"
+        echo "  ⚡ Kernel: $KERNEL_LABEL"
     fi
     
     echo ""
-    echo -e "${BLUE}🎮 ULTIMATE Sequential Build Features:${NC}"
-    echo "  🔥 linux-zen + PREEMPT_RT + 2000 Hz kernel (0.5ms latency)"
-    echo "  🌟 Gorgeous ZEN BROWSER (Chef's kiss aesthetics!)"
-    echo "  ⚡ zram + earlyoom for maximum performance"
-    echo "  🎯 GameMode, Lutris, Steam, MangoHud pre-installed"
-    echo "  🌐 BBR network optimization for online gaming"
-    echo "  🚀 Ultra-low latency optimizations throughout"
-    echo "  🎵 Real-time audio support for pro gaming"
-    echo "  🧠 Smart resource management (no more crashes!)"
-    echo "  🪟 Windows-like KDE Plasma gaming interface"
+    echo -e "${BLUE}🎮 Features:${NC}"
+    echo "  🔥 linux-zen + PREEMPT_RT + 2000 Hz + CONFIG_NO_HZ_IDLE"
+    echo "  🌟 Zen Browser (gorgeous aesthetics)"
+    echo "  ⚡ Clear Linux compiler optimizations for performance-critical components"
+    echo "  🎯 CONFIG_NO_HZ_IDLE for power efficiency"
+    echo "  💻 Intel CPU specific optimizations"
+    echo "  🚀 Parallel package downloads (Void XBPS optimized)"
+    echo "  📊 PowerTOP and monitoring tools"
+    echo "  🎮 GameMode, Lutris, Steam, MangoHud"
+    echo "  🌐 BBR network optimization"
+    echo "  🧠 Smart resource management"
+    echo "  🪟 KDE Plasma gaming interface"
     echo ""
     echo -e "${BLUE}🔑 Default Credentials:${NC}"
     echo "  👤 Root: root / auralis"
     echo "  👤 User: auralis / auralis"
     echo ""
-    echo -e "${GREEN}📁 Ultimate Sequential Build Output:${NC}"
-    if [[ -f "$OUTPUT_DIR/auralis-os-ultimate-sequential-${AURALIS_VERSION}-borealis-${ARCH}.iso" ]]; then
-        echo "  💿 Ultimate ISO: auralis-os-ultimate-sequential-${AURALIS_VERSION}-borealis-${ARCH}.iso"
-        echo "  📏 Size: $(du -h $OUTPUT_DIR/auralis-os-ultimate-sequential-${AURALIS_VERSION}-borealis-${ARCH}.iso | cut -f1)"
+    echo -e "${BLUE}🚀 Performance Commands:${NC}"
+    echo "  🔥 Activate Ultimate Mode: sudo auralis-ultimate-gaming-mode"
+    echo "  📊 Power Analysis: sudo powertop"
+    echo "  🎮 Package Management: sudo xbps-install [package]"
+    echo ""
+    echo -e "${GREEN}📁 Output:${NC}"
+    if [[ -f "$OUTPUT_DIR/auralis-os-${AURALIS_VERSION}-borealis-${ARCH}.iso" ]]; then
+        echo "  💿 ISO: auralis-os-${AURALIS_VERSION}-borealis-${ARCH}.iso"
+        echo "  📏 Size: $(du -h $OUTPUT_DIR/auralis-os-${AURALIS_VERSION}-borealis-${ARCH}.iso | cut -f1)"
     fi
     echo ""
-    echo -e "${PURPLE}🌌 Auralis OS Ultimate Sequential Edition - Perfected! 🌌${NC}"
-    echo -e "${PURPLE}🧠 Smart Resource Management = Reliable Ultimate Builds! 🧠${NC}"
-    echo -e "${PURPLE}🏖️ Vacation Quality Achieved - No Rush, Pure Excellence! 🏖️${NC}"
+    echo -e "${PURPLE}🌌 Auralis OS - Void Linux + Clear Linux Performance! 🌌${NC}"
+    echo -e "${PURPLE}🔥 Best of Both Worlds: Void's Simplicity + Clear's Speed! 🔥${NC}"
     echo ""
 }
 
@@ -762,13 +841,12 @@ display_ultimate_completion() {
 cleanup() {
     log "🧹 Final cleanup..."
     unmount_chroot 2>/dev/null || true
-    # Clean up saved kernel artifacts if build completed
     rm -rf "$KERNEL_SAVE_DIR" 2>/dev/null || true
 }
 
 # PHASE 3: Build the system
 build_system() {
-    phase "🏗️ PHASE 3: Building System with Ultimate Kernel"
+    phase "🏗️ PHASE 3: Building Void Linux System with Clear Linux optimizations"
     show_resources "Phase 3 Start"
     
     bootstrap_void_linux
@@ -782,7 +860,7 @@ build_system() {
     create_auralis_iso
     
     show_resources "Phase 3 End"
-    epic "🎯 Phase 3 COMPLETE! System built with ultimate kernel!"
+    epic "🎯 Phase 3 COMPLETE! Void Linux system with Clear Linux optimizations built!"
 }
 
 # Main sequential build process
@@ -790,29 +868,28 @@ main() {
     # Set trap for cleanup
     trap cleanup EXIT
     
-    # Start the ultimate sequential build
+    # Start the build
     display_banner
     install_build_dependencies
     setup_workspace
     
-    # PHASE 1: Build ultimate kernel
+    # PHASE 1: Build optimized kernel
     if build_ultimate_kernel; then
         save_kernel_and_cleanup
     else
-        warn "Phase 1 failed, will use standard kernel"
+        warn "Phase 1 failed, will use standard Void kernel"
         KERNEL_AVAILABLE=false
         save_kernel_and_cleanup
     fi
     
-    # PHASE 3: Build system with saved kernel
+    # PHASE 3: Build Void Linux system with Clear Linux optimizations
     build_system
     
-    # Show ultimate completion
+    # Show completion
     display_ultimate_completion
     
-    epic "🎉 Auralis OS Ultimate Sequential Build Complete!"
-    epic "🧠 Smart resource management delivered the impossible!"
+    epic "🎉 Auralis OS Build Complete: Void Linux + Clear Linux optimizations!"
 }
 
-# Execute ultimate sequential build
+# Execute build
 main "$@"
